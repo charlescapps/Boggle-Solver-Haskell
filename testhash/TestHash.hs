@@ -13,14 +13,13 @@ main = do args <- getArgs
                             ++ "Dictionary must be a line-separated list of uppercase words")
           else do let dictFileName = head args                                     
                   let hashSize = read $ head (tail args)
-                  putStrLn ("Hash table size: " ++ show hashSize)
-
-                  putStrLn ("Dictionary Input from: '" ++ dictFileName ++ "'")                
                   dictContents <- readFile dictFileName                  
                   myHashTable <- return $ getBogHashTableN (lines dictContents) hashSize
+                  let numUsed = numUsedBuckets myHashTable
 
-                  putStrLn ("Max bucket size: " ++ 
-                        (show . maxBucket $ myHashTable) ++ "\n")
+                  putStr (show hashSize ++ "\t")
+                  putStr ((show . maxBucket $ myHashTable) ++ "\t")
+                  putStrLn ( show numUsed)
 
 
 

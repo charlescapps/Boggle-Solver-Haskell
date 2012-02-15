@@ -60,6 +60,10 @@ showBogHash ht = concat $ [ "[" ++ show i ++ ", \n" ++
 maxBucket::BogHashTable -> Int
 maxBucket ht = foldl (\nom nomNom -> max (length (ht ! nomNom)) nom ) 0 [0..snd (bounds ht)]
 
+--Compute number of non-empty buckets
+numUsedBuckets :: BogHashTable -> Int
+numUsedBuckets ht = foldl (\nom nomNom -> nom + (if length (ht!nomNom) == 0 then 0 else 1)) 0 [0..snd (bounds ht)]
+
 --Misc. Test functions. This gets a list of buckets given some hash values
 getBuckets::BogHashTable -> [Int] -> [[String]]
 getBuckets ht xs = [(ht!i) | i <- xs]
