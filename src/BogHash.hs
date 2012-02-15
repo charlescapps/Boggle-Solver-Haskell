@@ -20,6 +20,10 @@ hashRange = (0, hashMax-1)
 wordHash::String->Int
 wordHash s = wordHash' s `mod` hashMax
 
+--compute hash in range [0...n-1]. Whether a letter is present or not
+wordHashN::String -> Int -> Int
+wordHashN s n = wordHash' s `mod` n
+
 --Helper that computes the hash *before* taking the mod.
 wordHash' :: String -> Int 
 wordHash' [] = 0
@@ -33,9 +37,14 @@ getBogHashTable::[String] -> BogHashTable
 getBogHashTable dict = accumArray (\ws w -> w:ws) [] hashRange 
                 [(wordHash word, word) | word <- dict]  
 
+--flexible version where we can pass in max hash value
+getBogHashTableN::[String] -> Int -> BogHashTable  
+getBogHashTableN dict n = accumArray (\ws w -> w:ws) [] (0,n-1) 
+                [(wordHashN word n, word) | word <- dict]  
+
 --Get Bucket given String to hash
 queryHash::BogHashTable -> String -> [String]
-queryHash ht word = ht ! (wordHash word)
+queryHash ht word = ht ! (wordHashN word (snd (bounds ht) + 1 ))
 
 --In dictionary?
 inDict::BogHashTable -> String -> Bool
@@ -49,7 +58,7 @@ showBogHash ht = concat $ [ "[" ++ show i ++ ", \n" ++
 
 --Compute the no. of elements in the fullest bucket
 maxBucket::BogHashTable -> Int
-maxBucket ht = foldl (\nom nomNom -> max (length (ht ! nomNom)) nom ) 0 [0..hashMax-1]
+maxBucket ht = foldl (\nom nomNom -> max (length (ht ! nomNom)) nom ) 0 [0..snd (bounds ht)]
 
 --Misc. Test functions. This gets a list of buckets given some hash values
 getBuckets::BogHashTable -> [Int] -> [[String]]
