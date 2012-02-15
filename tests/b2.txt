@@ -1,0 +1,6 @@
+5
+A B C D C
+E F G H G
+I J K L H
+M N O P K
+L M N O q
