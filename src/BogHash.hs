@@ -7,6 +7,10 @@ import Char (digitToInt)
 --Hash table with [String] for each bucket, uses a hash function String -> Int
 type BogHashTable = Array Int [String]
 
+--Max possible hash size that makes sense since there are 26 letters
+hashMaxAlphabet::Int
+hashMaxAlphabet = shift 1 26
+
 --Number of buckets in table. Will experi
 hashMax::Int
 hashMax = shift 1 20 -- ~1,000,000 buckets, ~28,000 used, max bucket = 144

@@ -33,18 +33,4 @@ readGameN s n = BoggleGame n $
 	[((i,j), toUpper $ letters !! (i*n+j)) | i <- [0..n-1],j <- [0..n-1]]
 		where letters = concat $ concat $ map words $ lines s
 
------------------Generate all possible plays------------------
 
-
-
-
-
-
-
--------------Test objects-----------------
-test::String
-test = "a a a a\na a a a\na a a a\na a a a"
-
-b::BoggleGame
-b = BoggleGame bogSize $ 
-    array ((0,0),(bogSize,bogSize)) [((i,j),'a') | i <- [0..maxIx], j <- [0..maxIx]]
