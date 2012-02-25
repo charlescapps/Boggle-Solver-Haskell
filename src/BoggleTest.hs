@@ -5,7 +5,6 @@ import GenPlays
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Data.Array
-import System.IO
 
 --Generate arbitrary capital letters
 getUpper::Gen Char
@@ -25,6 +24,24 @@ instance Arbitrary BoggleGame where
                    return $ BoggleGame n (array ((0,0),(n-1,n-1))
                             [((i`div`n,i`mod`n), list !! i) | i <- [0..n*n-1] ])
 
+--Make a type that's just a game and a starting index
+--I can't get around needing this to get an arbitrary
+--game & arbitrary index in the proper range
+data GameIndex = GameIx BoggleGame (Int,Int)
+    deriving Show
+
+getGame::GameIndex -> BoggleGame
+getGame (GameIx bg ixes) = bg
+
+getIxes::GameIndex -> (Int,Int)
+getIxes (GameIx bg ixes) = ixes
+
+instance Arbitrary GameIndex where
+    arbitrary = do (BoggleGame n g) <- arbitrary
+                   ix1 <- choose (0,n-1)
+                   ix2 <- choose (0,n-1)
+                   return $ GameIx (BoggleGame n g) (ix1,ix2)
+
 ----------------------------TESTS-----------------------------
 
 --If w1 contains some char, and w2 doesn't contain it, then hashes are different
@@ -41,9 +58,15 @@ prop_lenOfPlays game
         where allPlays = getAllPlaysAt game (0,0) 8
 
 
+--Check if the lists of coordinates are the same length as the word found
+prop_lenOfPlays' :: GameIndex -> Bool
+prop_lenOfPlays' (GameIx game (i,j))
+    = foldr (\x acc -> acc && (length $ fst x) == (length $ snd x)) True allPlays
+        where allPlays = getAllPlaysAt game (i,j) 6
 -----------------------COMMANDS-------------------------------
 --Check 20 boggle games since it takes a long time to check large boards
-quickCheckWith (Args Nothing 20 20 100 True) prop_lenOfPlays
+test20 = quickCheckWith (Args Nothing 20 20 100 True) prop_lenOfPlays
+test20' = quickCheckWith (Args Nothing 20 20 100 True) prop_lenOfPlays'
 
 
 
