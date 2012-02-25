@@ -1,7 +1,7 @@
 module BoggleTest where
 import BoggleData
-import BogHash
-import GenPlays
+import BoggleHash
+import BoggleSolver
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Data.Array

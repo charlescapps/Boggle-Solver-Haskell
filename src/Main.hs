@@ -1,7 +1,7 @@
 module Main where
-import GenPlays
+import BoggleSolver
 import BoggleData
-import BogHash
+import BoggleHash
 import BoggleTest
 import System.IO
 import System
@@ -35,7 +35,7 @@ main =
                let boardSize = readInt $ head gameLines
                let myBoard = readGameN (concat $ tail gameLines) boardSize 
 
-               testRandomBoards myHashTable 8
+               testRandomBoards myHashTable 12
 
 --Generate a lot of random boards and start indexes, then get solutions under
 --some length 'n' starting at that index
@@ -52,7 +52,8 @@ testRandomBoards ht n =
 
 
 intersperse :: [a] -> [a] -> [a]
-intersperse [] [] = []
+intersperse _ [] = []
+intersperse [] _ = []
 intersperse (x:xs) (y:ys) = x:y:(intersperse xs ys)
 
 executeList :: [IO a] -> IO ()
