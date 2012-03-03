@@ -10,7 +10,7 @@ import Data.Array
 getUpper::Gen Char
 getUpper= oneof (map return ['A'..'Z'])
 
---Get arbitrary NxN string of uppercase letters
+--Get arbitrary length n string of uppercase letters
 arbitString::Int -> Gen [Char] 
 arbitString n | (n == 0) = return []
               | otherwise = do c <- getUpper
@@ -33,6 +33,15 @@ getArbitraryGame n = do list <- arbitString (n*n)
 --Get num many arbitrary nxn BogGame's
 getArbitraryGames :: Int -> Int -> Gen [BogGame]
 getArbitraryGames n num = sequence $ replicate num (getArbitraryGame n)
+
+--Get some sampling of random nxn games
+getGameSample :: Int -> IO BogGame
+getGameSample n = do samples <- sample' $ getArbitraryGame n
+                     return $ head samples
+
+--Get some sampling of random nxn games
+getGameSamples :: Int -> Int -> IO [BogGame]
+getGameSamples n num = sequence $ replicate num $ getGameSample n
 
 --Make a type that's just a game and a starting index
 --I can't get around needing this to get an arbitrary
@@ -62,21 +71,21 @@ prop_hashReq c w1 w2=
             wordHashN w1 hashMaxAlphabet /= wordHashN w2 hashMaxAlphabet
 
 --Check if the lists of coordinates are the same length as the word found
-prop_lenOfPlays :: BogGame -> Bool
-prop_lenOfPlays game
-    = foldr (\x acc -> acc && (length $ fst x) == (length $ snd x)) True allPlays
-        where allPlays = getAllPlaysAt game (0,0) 8
-
-
---Check if the lists of coordinates are the same length as the word found
-prop_lenOfPlays' :: GameIndex -> Bool
-prop_lenOfPlays' (GameIx game (i,j))
-    = foldr (\x acc -> acc && (length $ fst x) == (length $ snd x)) True allPlays
-        where allPlays = getAllPlaysAt game (i,j) 6
+--prop_lenOfPlays :: BogGame -> Bool
+--prop_lenOfPlays game
+--    = foldr (\x acc -> acc && (length $ fst x) == (length $ snd x)) True allPlays
+--        where allPlays = getAllPlaysAtHash game (0,0) 8
+--
+--
+----Check if the lists of coordinates are the same length as the word found
+--prop_lenOfPlays' :: GameIndex -> Bool
+--prop_lenOfPlays' (GameIx game (i,j))
+--    = foldr (\x acc -> acc && (length $ fst x) == (length $ snd x)) True allPlays
+--        where allPlays = getAllPlaysAtHash game (i,j) 6
 -----------------------COMMANDS-------------------------------
 --Check 20 boggle games since it takes a long time to check large boards
-test20 = quickCheckWith (Args Nothing 20 20 100 True) prop_lenOfPlays
-test20' = quickCheckWith (Args Nothing 20 20 100 True) prop_lenOfPlays'
+--test20 = quickCheckWith (Args Nothing 20 20 100 True) prop_lenOfPlays
+--test20' = quickCheckWith (Args Nothing 20 20 100 True) prop_lenOfPlays'
 
 
 

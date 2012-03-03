@@ -13,7 +13,8 @@ hashMaxAlphabet = shift 1 26
 
 --Number of buckets in table. Will experi
 hashMax::Int
-hashMax = shift 1 20 -- ~1,000,000 buckets, ~28,000 used, max bucket = 144
+hashMax = shift 1 20 
+-- ~1,000,000 buckets, ~28,000 used, max bucket = 144
 --When I decrease the no. to 2^19 the max bucket size increases to 254!!
 --so 2^20 seems like a good balance. Should be around 4 MB + overhead
 
@@ -37,13 +38,13 @@ wordHash' (c:cs) = charToBit c .|. wordHash' cs
 charToBit::Char -> Int
 charToBit c = shift 1 (fromEnum c - fromEnum 'A')
 
-getBogHashTable::[String] -> BogHashTable  
-getBogHashTable dict = accumArray (\ws w -> w:ws) [] hashRange 
+buildHashTable::[String] -> BogHashTable  
+buildHashTable dict = accumArray (\ws w -> w:ws) [] hashRange 
                 [(wordHash word, word) | word <- dict]  
 
 --flexible version where we can pass in max hash value
-getBogHashTableN::[String] -> Int -> BogHashTable  
-getBogHashTableN dict n = accumArray (\ws w -> w:ws) [] (0,n-1) 
+buildHashTableN::[String] -> Int -> BogHashTable  
+buildHashTableN dict n = accumArray (\ws w -> w:ws) [] (0,n-1) 
                 [(wordHashN word n, word) | word <- dict]  
 
 --Get Bucket given String to hash
