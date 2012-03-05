@@ -28,7 +28,7 @@ showPlays ps = unlines $ map showPlayPretty ps
 --that hasn't been used yet.
 getAllPlaysAtHash :: BogGame -> (Int, Int) -> BogHashTable -> Int -> [Play]
 getAllPlaysAtHash bg ix hash len = 
-    [ (reverse $ fst p, reverse $ snd p) | p <- reversedPlays ]
+    playsToSet [ (reverse $ fst p, reverse $ snd p) | p <- reversedPlays ]
         where reversedPlays = getAllPlaysAtHash' bg ix hash len ([],"")
 
 ---------------------------OLD VERSION-----------------------------------------
@@ -83,7 +83,9 @@ filterPlays ix plays = [ p | p <- plays, not $ ix `elem` (fst p)]
 --game, max len -> list of plays/scores 
 solveGameHash :: BogGame -> BogHashTable -> Int -> [Play] 
 solveGameHash (BogGame n board) ht maxLen =  
-    [ play | i <- [0..n-1], j <- [0..n-1], play <- getAllPlaysAtHash (BogGame n board) (i,j) ht maxLen ]
+    filter ((>2) . length . snd) $ playsToSet 
+        [ play | i <- [0..n-1], j <- [0..n-1], 
+            play <- getAllPlaysAtHash (BogGame n board) (i,j) ht maxLen ]
 
 --simple utility function 
 listToSet :: (Eq a) => [a] -> [a] 
@@ -131,7 +133,7 @@ getJustTrie (Just t) = t
 
 --Output all valid plays rooted at every possible index (i,j)
 solveGameTrie :: BogGame -> BogTrie -> [Play]
-solveGameTrie (BogGame size bg) trie = playsToSet $ 
+solveGameTrie (BogGame size bg) trie = filter ((>2) . length . snd) $ playsToSet $ 
                     concat [getAllPlaysAtTrie (BogGame size bg) (i,j) trie | 
                         i <- [0..size-1], j <- [0..size-1]]
 

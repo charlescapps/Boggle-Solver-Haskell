@@ -9,11 +9,9 @@ import UtilityFuncs
 import Treedot
 import System.IO
 import System
-import Test.QuickCheck
-import Test.QuickCheck.Gen
 
 usageStr :: String
-usageStr = "Need to specifiy a dictionary file.\n" 
+usageStr = "Need to specifiy 3 or 4 arguments.\n" 
             ++ "\tUsage: main \"dictfile\" (\"HASH\" | \"TRIE\") \"BOARDSIZE\" [MAX_WORD_LENGTH]\n"
             ++ "\tNote: Dictionary must have one uppercase word per line"
 
@@ -74,40 +72,5 @@ solveRandomGamesTrie trie boardSize numSamples =
        let showGameThenSoln = mixLists showGames showSolns
        executeList showGameThenSoln
 
---Do QuickChecks on a random sample of boards of sizes 4x4...20x20
---Random start positions (ixes)
---Output valid moves only
---testRandomGoodPlays :: BogHashTable -> Int -> IO ()
---testRandomGoodPlays ht n = 
---    do randGamesIxes <- sample' (arbitrary::Gen GameIndex)
---       let games = map getGame randGamesIxes
---       let ixes = map getIxes randGamesIxes
---       let results = zipWith (\g ix -> getGoodPlaysAt ht g ix n) games ixes
---       let showGames = map (putStrLn . show) games
---       let showResults = map (putStrLn . showPlays) results
---       let showAll = mixLists showGames showResults
---       executeList showAll
---
-----Output valid moves and bogus moves from random quickChecks. 
---testRandomAll :: BogHashTable -> Int -> IO ()
---testRandomAll ht n = 
---    do randGamesIxes <- sample' (arbitrary::Gen GameIndex)
---       let games = map getGame randGamesIxes
---       let ixes = map getIxes randGamesIxes
---       let goodPlays = zipWith (\g ix -> getGoodPlaysAt ht g ix n) games ixes
---       let allPlays = zipWith (\g ix -> getAllPlaysAt g ix n) games ixes
---       let showGames = map (putStrLn . show) games
---       let showGoodPlays = map (putStrLn . ("GOOD PLAYS:\n" ++ ) . showPlays) goodPlays
---       let showAllPlays = map (putStrLn . ("ALL PLAYS:\n" ++ ) . showPlays) allPlays
---       let showAll = mixLists3 showGames showGoodPlays showAllPlays
---       executeList showAll
-
---build an example trie. Shouldn't use the whole dictionary when creating a 
---labeled trie. Input is dictionary split into lines and filename
-buildSmallTrie::[String] -> String -> IO() 
-buildSmallTrie dict fileName = 
-    do let t = buildLabelTrie dict ""
-       putStrLn $ "Writing dot file " ++ fileName
-       writeFile fileName (toDot t)
 
 
