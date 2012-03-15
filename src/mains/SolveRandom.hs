@@ -1,4 +1,4 @@
-module Main where
+module SolveRandom where
 import BoggleSolver
 import BoggleGame
 import BoggleHash
@@ -12,7 +12,7 @@ import System
 
 usageStr :: String
 usageStr = "Need to specifiy 3 or 4 arguments.\n" 
-            ++ "\tUsage: main \"dictfile\" (\"HASH\" | \"TRIE\") \"BOARDSIZE\" [MAX_WORD_LENGTH]\n"
+            ++ "\tUsage: solve_random \"dictfile\" (\"HASH\" | \"TRIE\") \"BOARDSIZE\" [MAX_WORD_LENGTH]\n"
             ++ "\tNote: Dictionary must have one uppercase word per line"
 
 

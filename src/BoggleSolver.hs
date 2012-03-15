@@ -9,6 +9,9 @@ import Data.Maybe
 --represents a snakey path through the boggle matrix
 type Play = ([(Int,Int)],String) --list of indices into matrix and the word
 
+nilPlay :: Play
+nilPlay = ([],"")
+
 showPlayPretty :: Play -> String
 showPlayPretty p = (snd p) ++ ":  " ++ (show $ fst p) 
 
@@ -27,9 +30,10 @@ showPlays ps = unlines $ map showPlayPretty ps
 --Recursively adds letters to each play provided there's an adjacent cube
 --that hasn't been used yet.
 getAllPlaysAtHash :: BogGame -> (Int, Int) -> BogHashTable -> Int -> [Play]
-getAllPlaysAtHash bg ix hash len = 
+getAllPlaysAtHash (BogGame n board) ix hash len = 
     playsToSet [ (reverse $ fst p, reverse $ snd p) | p <- reversedPlays ]
-        where reversedPlays = getAllPlaysAtHash' bg ix hash len ([],"")
+        where reversedPlays = getAllPlaysAtHash' bg ix hash (len-1) nilPlay
+              bg = BogGame n board
 
 ---------------------------OLD VERSION-----------------------------------------
 --Strat is to add current letter to the move we're building, then do a 
@@ -47,19 +51,30 @@ getAllPlaysAtHash bg ix hash len =
 --              bg = (BogGame size g)
 --              concatPlays = newPlays bg plays (n,m)
 
+--getAllPlaysAtHash' :: BogGame -> (Int, Int) -> BogHashTable -> Int -> Play -> [Play]
+--getAllPlaysAtHash' (BogGame size bg) (n,m) hash maxLen play 
+--    | maxLen == 0 = addPlay
+--    | otherwise = addPlay ++ concat [getAllPlaysAtHash' (BogGame size bg) 
+--        (head $ fst play') 
+--        hash
+--        (maxLen - 1)
+--        play' | play' <- newPlays]
+--            where diffs = [(-1,-1),(-1,0),(0,-1),(1,0),(0,1),(1,1),(-1,1),(1,-1)]
+--                  newPlays = [ ((i+n,j+m) : fst play, (bg ! (i+n,j+m)): snd play) 
+--                        | (i,j) <- diffs, 
+--                          isValidCubeHash (BogGame size bg) (i+n,j+m) play]
+--                  addPlay = if BoggleHash.inDict hash (reverse $ snd play) then [play] else []
+
 getAllPlaysAtHash' :: BogGame -> (Int, Int) -> BogHashTable -> Int -> Play -> [Play]
 getAllPlaysAtHash' (BogGame size bg) (n,m) hash maxLen play 
     | maxLen == 0 = addPlay
     | otherwise = addPlay ++ concat [getAllPlaysAtHash' (BogGame size bg) 
-        (head $ fst play') 
-        hash
-        (maxLen - 1)
-        play' | play' <- newPlays]
-            where diffs = [(0,0),(-1,-1),(-1,0),(0,-1),(1,0),(0,1),(1,1),(-1,1),(1,-1)]
-                  newPlays = [ ((i+n,j+m) : fst play, (bg ! (i+n,j+m)): snd play) 
-                        | (i,j) <- diffs, 
-                          isValidCubeHash (BogGame size bg) (i+n,j+m) play]
-                  addPlay = if BoggleHash.inDict hash (reverse $ snd play) then [play] else []
+        ix hash (maxLen - 1) newPlay | ix <- newCubes]
+            where diffs = [(-1,-1),(-1,0),(0,-1),(1,0),(0,1),(1,1),(-1,1),(1,-1)]
+                  newCubes = [ (i+n,j+m) | (i,j) <- diffs, 
+                          isValidCubeHash (BogGame size bg) (i+n,j+m) newPlay]
+                  newPlay = ((n,m) : fst play, (bg ! (n,m)) : snd play)
+                  addPlay = if BoggleHash.inDict hash (reverse $ snd newPlay) then [newPlay] else []
 
 --Helper to check if we should consider adding an adjacent cube.
 isValidCubeHash :: BogGame -> (Int,Int) -> Play -> Bool

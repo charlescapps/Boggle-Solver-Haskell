@@ -7,6 +7,7 @@ import Treedot
 --However, the real work is in the algorithm to generate the trie
 --and check if a string could be a prefix to a word.
 data BogTrie = BogTrie { realWord :: Bool, branches :: [(Char,BogTrie)] } 
+    deriving Show
 data LabelTrie = LabelTrie { lRealWord :: Bool, hash :: String, lBranches :: [(Char,LabelTrie)] } 
     deriving Show
 

@@ -1,4 +1,4 @@
-module Main where
+module SolveFile where
 import BoggleSolver
 import BoggleGame
 import BoggleHash

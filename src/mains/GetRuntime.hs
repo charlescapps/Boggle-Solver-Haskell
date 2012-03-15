@@ -1,4 +1,4 @@
-module Main where
+module GetRuntime where
 import BoggleSolver
 import BoggleGame
 import BoggleHash
@@ -33,7 +33,7 @@ headerAvgHash = "DATASTRUCTURE N AVG_TIME STD_DEV NUM_BOARDS MAXLEN"
 
 usageStr :: String
 usageStr = "Need to specifiy 6 or 7 arguments.\n" 
-            ++ "\tUsage: main \"dictfile\" (\"HASH\" | \"TRIE\") \"MIN N\" \"MAX N\" \"NUM_REPEAT\" \"OUTPUT_FILE\" \"AVG_FILE\" [MAX_WORD_LENGTH]\n"
+            ++ "\tUsage: get_runtime \"dictfile\" (\"HASH\" | \"TRIE\") \"MIN N\" \"MAX N\" \"NUM_REPEAT\" \"OUTPUT_FILE\" \"AVG_FILE\" [MAX_WORD_LENGTH]\n"
             ++ "\tNote: Dictionary must have one uppercase word per line"
 
 main::IO()
@@ -106,6 +106,7 @@ getRuntimeOneSizeHash ht size numRepeat maxLen =
       do   randGame <- getGameSamples size 1
            startTime <- getCPUTime
            let plays = solveGameHash (head randGame) ht maxLen
+           putStrLn $ show $ head randGame
            putStrLn $ showPlaysByScoreWithTotal plays
            endTime <- getCPUTime
            let precision = cpuTimePrecision
@@ -126,6 +127,7 @@ getRuntimeOneSizeTrie trie size numRepeat =
       do   randGame <- getGameSamples size 1
            startTime <- getCPUTime
            let plays = solveGameTrie (head randGame) trie 
+           putStrLn $ show $ head randGame
            putStrLn $ showPlaysByScoreWithTotal plays
            endTime <- getCPUTime
            let precision = cpuTimePrecision
