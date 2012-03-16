@@ -6,8 +6,12 @@ import BoggleTrie
 import Data.Array
 import Data.Maybe
 
---represents a snakey path through the boggle matrix
-type Play = ([(Int,Int)],String) --list of indices into matrix and the word
+--That path of the play and the word that's formed
+type Play = ([(Int,Int)],String) 
+
+--Differences we can add to get adjacent cubes
+diffs ::[(Int,Int)] 
+diffs = [(-1,-1),(-1,0),(0,-1),(1,0),(0,1),(1,1),(-1,1),(1,-1)]
 
 nilPlay :: Play
 nilPlay = ([],"")
@@ -70,9 +74,8 @@ getAllPlaysAtHash' (BogGame size bg) (n,m) hash maxLen play
     | maxLen == 0 = addPlay
     | otherwise = addPlay ++ concat [getAllPlaysAtHash' (BogGame size bg) 
         ix hash (maxLen - 1) newPlay | ix <- newCubes]
-            where diffs = [(-1,-1),(-1,0),(0,-1),(1,0),(0,1),(1,1),(-1,1),(1,-1)]
-                  newCubes = [ (i+n,j+m) | (i,j) <- diffs, 
-                          isValidCubeHash (BogGame size bg) (i+n,j+m) newPlay]
+            where newCubes = [ (n+i,m+j) | (i,j) <- diffs, 
+                          canAddCube (BogGame size bg) (n+i,m+j) newPlay]
                   newPlay = ((n,m) : fst play, (bg ! (n,m)) : snd play)
                   addPlay = if BoggleHash.inDict hash (reverse $ snd newPlay) then [newPlay] else []
 
@@ -94,7 +97,7 @@ newPlays (BogGame n g) plays ix
 filterPlays :: (Int, Int) -> [Play] -> [Play]
 filterPlays ix plays = [ p | p <- plays, not $ ix `elem` (fst p)]
 
------------------GET ALL PLAYS AND SCORES, NAIVE ALGORITHM----------------------
+-----------------GET ALL PLAYS AND SCORES, HASH ALGORITHM----------------------
 --game, max len -> list of plays/scores 
 solveGameHash :: BogGame -> BogHashTable -> Int -> [Play] 
 solveGameHash (BogGame n board) ht maxLen =  
@@ -118,28 +121,41 @@ playsToSet xs = foldr (\x acc -> if snd x `elem` getWords acc then acc else x:ac
 --Reverse the backwards words / moves returned by getAllPlaysAtTrie'
 --Remove duplicate words with playsToSet
 getAllPlaysAtTrie :: BogGame -> (Int, Int) -> BogTrie -> [Play]
-getAllPlaysAtTrie game ix trie = [(reverse $ fst play, reverse $ snd play) | 
-                    play <- getAllPlaysAtTrie' game ix trie ([], "")]
+getAllPlaysAtTrie (BogGame size bg) ix trie = [(reverse $ fst play, reverse $ snd play) | 
+                    play <- getAllPlaysAtTrie' 
+                        (BogGame size bg) ix 
+                            (lookup (bg ! ix) (branches trie)) ([], "")]
 
-getAllPlaysAtTrie' :: BogGame -> (Int, Int) -> BogTrie -> Play -> [Play]
-getAllPlaysAtTrie' (BogGame size bg) (n,m) trie play = 
-    addPlay ++ concat [getAllPlaysAtTrie' (BogGame size bg) 
-        (head $ fst play') 
-        (getJustTrie $ lookup (head $ snd play') (branches trie)) 
-        play' | play' <- newPlays]
-    where diffs = [(0,0),(-1,-1),(-1,0),(0,-1),(1,0),(0,1),(1,1),(-1,1),(1,-1)]
-          newPlays = [ ((i+n,j+m) : fst play, (bg ! (i+n,j+m)): snd play) 
-                                | (i,j) <- diffs, 
-                                    isValidCubeTrie (BogGame size bg) (i+n,j+m) trie play]
-          addPlay = if realWord trie then [play] else []
+getAllPlaysAtTrie' :: BogGame -> (Int, Int) -> (Maybe BogTrie) -> Play -> [Play]
+getAllPlaysAtTrie' (BogGame size bg) (n,m) maybeTrie play
+    | isNothing maybeTrie = [] --Halt if letter isn't a branch in the trie
+    | otherwise = addPlay ++ concat [getAllPlaysAtTrie' (BogGame size bg) 
+            ix (lookup (bg ! ix) (branches trie)) newPlay
+            | ix <- newCubes]
+    where newCubes = [ (n+i,m+j) | (i,j) <- diffs, 
+                        canAddCube (BogGame size bg) (n+i,m+j) newPlay]
+          newPlay = ((n,m) : fst play, (bg ! (n,m)) : snd play)
+          trie = fromJust maybeTrie
+          addPlay = if realWord trie then [newPlay] else []
+
+--getAllPlaysAtTrie' :: BogGame -> (Int, Int) -> BogTrie -> Play -> [Play]
+--getAllPlaysAtTrie' (BogGame size bg) (n,m) trie play = 
+--    addPlay ++ concat [getAllPlaysAtTrie' (BogGame size bg) 
+--        (head $ fst play') 
+--        (getJustTrie $ lookup (head $ snd play') (branches trie)) 
+--        play' | play' <- newPlays]
+--    where diffs = [(0,0),(-1,-1),(-1,0),(0,-1),(1,0),(0,1),(1,1),(-1,1),(1,-1)]
+--          newPlays = [ ((i+n,j+m) : fst play, (bg ! (i+n,j+m)): snd play) 
+--                                | (i,j) <- diffs, 
+--                                    isValidCubeTrie (BogGame size bg) (i+n,j+m) trie play]
+--          addPlay = if realWord trie then [play] else []
 
 --Helper to check if new cube is a valid move. 
---Uses trie to see if it's a substring of some actual word in dictionary.
-isValidCubeTrie :: BogGame -> (Int,Int) -> BogTrie -> Play -> Bool
-isValidCubeTrie (BogGame size bg) (n,m) trie pl 
+--Must be in bounds and not in the list of cubes already visited.
+canAddCube :: BogGame -> (Int,Int) -> Play -> Bool
+canAddCube (BogGame size bg) (n,m) play 
     | n < 0 || m < 0 || n >= size || m >= size = False 
-    | elem (n,m) (fst pl) = False
-    | isNothing $ lookup (bg ! (n,m)) (branches trie)  = False
+    | elem (n,m) (fst play) = False
     | otherwise = True
 
 getJustTrie :: Maybe BogTrie -> BogTrie --Get rid of Maybe with a default trie
